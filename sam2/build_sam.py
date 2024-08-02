@@ -7,7 +7,7 @@
 import logging
 
 import torch
-# from hydra import compose
+from hydra import compose
 from hydra.utils import instantiate
 from omegaconf import OmegaConf
 
@@ -30,10 +30,7 @@ def build_sam2(
             "++model.sam_mask_decoder_extra_args.dynamic_multimask_stability_thresh=0.98",
         ]
     # Read config and init model
-    cfg = OmegaConf.load(config_file)
-    for _info in hydra_overrides_extra:
-        OmegaConf.update(cfg, _info.split('=')[0].replace('++', ''), _info.split('=')[1], force_add=True)
-    # cfg = compose(config_name=config_file, overrides=hydra_overrides_extra)
+    cfg = compose(config_name=config_file, overrides=hydra_overrides_extra)
     OmegaConf.resolve(cfg)
     model = instantiate(cfg.model, _recursive_=True)
     _load_checkpoint(model, ckpt_path)
@@ -69,10 +66,7 @@ def build_sam2_video_predictor(
     hydra_overrides.extend(hydra_overrides_extra)
 
     # Read config and init model
-    cfg = OmegaConf.load(config_file)
-    for _info in hydra_overrides_extra:
-        OmegaConf.update(cfg, _info.split('=')[0].replace('++', ''), _info.split('=')[1], force_add=True)
-    # cfg = compose(config_name=config_file, overrides=hydra_overrides)
+    cfg = compose(config_name=config_file, overrides=hydra_overrides)
     OmegaConf.resolve(cfg)
     model = instantiate(cfg.model, _recursive_=True)
     _load_checkpoint(model, ckpt_path)
