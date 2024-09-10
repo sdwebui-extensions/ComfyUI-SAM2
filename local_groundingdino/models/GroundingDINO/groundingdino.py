@@ -36,6 +36,7 @@ from .bertwarper import (
 )
 from .transformer import build_transformer
 from .utils import MLP, ContrastiveEmbed
+import os
 
 
 class GroundingDINO(nn.Module):
