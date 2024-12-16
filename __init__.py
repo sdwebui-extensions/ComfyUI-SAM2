@@ -1,9 +1,9 @@
-from .node import SAM2ModelLoader, GroundingDinoModelLoader, GroundingDinoSAMSegment, InvertMask, IsMaskEmptyNode
+from .node import SAM2ModelLoader, GroundingDinoModelLoader, GroundingDinoSAM2Segment, InvertMask, IsMaskEmptyNode
 
 NODE_CLASS_MAPPINGS = {
     'SAM2ModelLoader (segment anything2)': SAM2ModelLoader,
     'GroundingDinoModelLoader (segment anything2)': GroundingDinoModelLoader,
-    'GroundingDinoSAMSegment (segment anything2)': GroundingDinoSAMSegment,
+    'GroundingDinoSAM2Segment (segment anything2)': GroundingDinoSAM2Segment,
     'InvertMask (segment anything2)': InvertMask,
     "IsMaskEmpty": IsMaskEmptyNode,
 }
