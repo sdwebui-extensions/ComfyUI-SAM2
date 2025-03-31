@@ -12,16 +12,18 @@ from torch.hub import download_url_to_file
 from urllib.parse import urlparse
 import folder_paths
 import comfy.model_management
-from sam2.build_sam import build_sam2
-from sam2.sam2_image_predictor import SAM2ImagePredictor
-from local_groundingdino.datasets import transforms as T
-from local_groundingdino.util.utils import (
+from comfyui_sam2.build_sam import build_sam2
+from comfyui_sam2.sam2_image_predictor import SAM2ImagePredictor
+from comfyui_local_groundingdino.datasets import transforms as T
+from comfyui_local_groundingdino.util.utils import (
     clean_state_dict as local_groundingdino_clean_state_dict,
 )
-from local_groundingdino.util.slconfig import SLConfig as local_groundingdino_SLConfig
-from local_groundingdino.models import build_model as local_groundingdino_build_model
+from comfyui_local_groundingdino.util.slconfig import SLConfig as local_groundingdino_SLConfig
+from comfyui_local_groundingdino.models import build_model as local_groundingdino_build_model
 import glob
 import folder_paths
+from hydra import initialize
+from hydra.core.global_hydra import GlobalHydra
 
 logger = logging.getLogger("ComfyUI-SAM2")
 
@@ -39,17 +41,17 @@ sam_model_list = {
     "sam2_hiera_large.pt": {
         "model_url": "https://dl.fbaipublicfiles.com/segment_anything_2/072824/sam2_hiera_large.pt"
     },
-    "sam2_1_hiera_tiny": {
+    "sam2_1_hiera_tiny.pt": {
         "model_url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_tiny.pt"
     },
     "sam2_1_hiera_small.pt": {
         "model_url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_small.pt"
     },
     "sam2_1_hiera_base_plus.pt": {
-        "model_url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2_hiera_base_plus.pt"
+        "model_url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_base_plus.pt"
     },
     "sam2_1_hiera_large.pt": {
-        "model_url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2_hiera_large.pt"
+        "model_url": "https://dl.fbaipublicfiles.com/segment_anything_2/092824/sam2.1_hiera_large.pt"
     },
 }
 
@@ -93,8 +95,16 @@ def load_sam_model(model_name):
         sam_model_list[model_name]["model_url"], sam_model_dir_name
     )
     model_file_name = os.path.basename(sam2_checkpoint_path)
+    model_file_name = model_file_name.replace("2.1", "2_1")
     model_type = model_file_name.split(".")[0]
-    model_cfg = model_type + ".yaml"
+
+    if GlobalHydra().is_initialized():
+        GlobalHydra.instance().clear()
+
+    config_path = "sam2_configs"
+    initialize(config_path=config_path)
+    model_cfg = f"{model_type}.yaml"
+
     sam_device = comfy.model_management.get_torch_device()
     sam = build_sam2(model_cfg, sam2_checkpoint_path, device=sam_device)
     sam.model_name = model_file_name
@@ -250,6 +260,10 @@ def sam_segment(sam_model, image, boxes):
         point_coords=None, point_labels=None, box=boxes, multimask_output=False
     )
     print("scores: ", scores)
+    print("masks shape before any modification:", masks.shape)
+    if masks.ndim == 3:
+        masks = np.expand_dims(masks, axis=0)
+    print("masks shape after ensuring 4D:", masks.shape)
     masks = np.transpose(masks, (1, 0, 2, 3))
     return create_tensor_output(image_np, masks, boxes)
 
