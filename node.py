@@ -101,7 +101,7 @@ def load_sam_model(model_name):
     if GlobalHydra().is_initialized():
         GlobalHydra.instance().clear()
 
-    config_path = "sam2_configs"
+    config_path = "comfyui_sam2_configs"
     initialize(config_path=config_path)
     model_cfg = f"{model_type}.yaml"
 
