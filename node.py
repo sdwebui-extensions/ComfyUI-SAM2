@@ -24,6 +24,7 @@ import glob
 import folder_paths
 from hydra import initialize
 from hydra.core.global_hydra import GlobalHydra
+from comfy.cli_args import args
 
 logger = logging.getLogger("ComfyUI-SAM2")
 
@@ -75,6 +76,8 @@ def get_bert_base_uncased_model_path():
     ):
         print("grounding-dino is using models/bert-base-uncased")
         return comfy_bert_model_base
+    if os.path.exists('/stable-diffusion-cache/models/models--bert-base-uncased'):
+        return os.path.join(args.cache_root, 'models/models--bert-base-uncased')
     return "bert-base-uncased"
 
 
@@ -128,9 +131,9 @@ def get_local_filepath(url, dirname, local_file_name=None):
     destination = os.path.join(folder, local_file_name)
     if not os.path.exists(destination):
         if os.path.exists(os.path.join("/stable-diffusion-cache/models/grounding-dino", local_file_name)):
-            return os.path.join("/stable-diffusion-cache/models/grounding-dino", local_file_name)
+            return os.path.join(args.cache_root, "models/grounding-dino", local_file_name)
         elif os.path.exists(os.path.join("/stable-diffusion-cache/models/sams", local_file_name)):
-            return os.path.join("/stable-diffusion-cache/models/sams", local_file_name)
+            return os.path.join(args.cache_root, "models/sams", local_file_name)
         logger.warn(f'downloading {url} to {destination}')
         download_url_to_file(url, destination)
     if not os.path.exists(destination):
